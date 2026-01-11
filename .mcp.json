@@ -1,0 +1,13 @@
+{
+    "mcpServers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@anthropic/mcp-server-filesystem",
+                "."
+            ],
+            "description": "File system access for reading and writing documents"
+        }
+    }
+}
