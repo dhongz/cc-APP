@@ -69,7 +69,3 @@ cc-APP/
 ## Learn More
 
 See `ARCHITECTURE.md` for the full design philosophy behind ccAPPs.
-
-## License
-
-MIT
