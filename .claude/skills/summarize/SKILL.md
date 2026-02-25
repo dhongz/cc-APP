@@ -1,6 +1,8 @@
 ---
+name: summarize
 description: Summarize content and save to the knowledge base
 argument-hint: [topic-name]
+disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash(echo:*), Bash(mkdir:*), Bash(cat:*)
 ---
 

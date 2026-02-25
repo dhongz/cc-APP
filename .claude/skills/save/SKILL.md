@@ -1,6 +1,8 @@
 ---
+name: save
 description: Save current session work to an organized output folder
 argument-hint: [session-name]
+disable-model-invocation: true
 allowed-tools: Read, Bash(mkdir:*), Bash(cp:*), Bash(echo:*), Bash(date:*)
 ---
 

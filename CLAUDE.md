@@ -4,7 +4,7 @@
 
 ## Overview
 
-This template shows the standard structure for building ccAPPs. It uses a **notes & knowledge management** theme to demonstrate how commands, agents, skills, and documents work together.
+This template shows the standard structure for building ccAPPs. It uses a **notes & knowledge management** theme to demonstrate how skills, agents, and documents work together.
 
 ## Quick Start
 
@@ -18,7 +18,7 @@ This template shows the standard structure for building ccAPPs. It uses a **note
 ```
 User: "/summarize api-design"
   ↓
-Command: summarize.md executes
+Skill: summarize/SKILL.md executes
   ↓
 Skill: note-taking formats the content
   ↓
@@ -29,13 +29,12 @@ Output: documents/notes/api-design.md created
 
 ```
 .claude/
-├── commands/       # User-initiated actions
-│   ├── summarize.md    → Creates notes in knowledge base
-│   └── save.md         → Saves session to outputs/
 ├── agents/         # Specialized sub-agents
 │   ├── researcher.md   → Gathers information
 │   └── writer.md       → Drafts content
-└── skills/         # Capability extensions
+└── skills/         # Skills and slash commands
+    ├── summarize/      → Creates notes in knowledge base
+    ├── save/           → Saves session to outputs/
     ├── note-taking/    → How to format notes
     └── knowledge-search/ → How to search documents/
 
@@ -50,7 +49,6 @@ outputs/            # Session artifacts from /save
 
 ## Customizing This Template
 
-1. **Add commands** for your workflows in `.claude/commands/`
+1. **Add skills** for new capabilities in `.claude/skills/`
 2. **Add agents** for specialized tasks in `.claude/agents/`
-3. **Add skills** for new capabilities in `.claude/skills/`
-4. **Configure MCPs** in `.mcp.json` for external tools
+3. **Configure MCPs** in `.mcp.json` for external tools
