@@ -4,58 +4,55 @@
 
 ---
 
-## Core Pattern: Commands, Agents, Skills, MCPs
+## Core Pattern: Skills, Agents, MCPs
 
-Every ccAPP is built on four fundamental primitives:
+Every ccAPP is built on three fundamental primitives:
 
-### Commands = User Intentions
+### Skills = Capabilities + Slash Commands
 
-**What they are:** Entry points for deliberate, user-initiated actions
+**What they are:** The primary building block. Skills teach Claude how to do things, and can also serve as user-triggered slash commands.
 
-**When to create one:** When a user knows exactly what they want to accomplish
+**Three modes, controlled by frontmatter:**
+
+| Mode | Frontmatter | Use case |
+|------|-------------|----------|
+| **Slash command** | `disable-model-invocation: true` | User triggers explicitly: `/deploy`, `/summarize` |
+| **Auto-loaded** | *(default)* | Claude uses when relevant: `note-taking`, `knowledge-search` |
+| **Background knowledge** | `user-invocable: false` | Always-on context Claude loads silently: `writing-style`, `brand-voice` |
+
+**When to create one:**
+- User wants a slash command for a deliberate action
+- Claude needs domain-specific knowledge or methods it doesn't have natively
+- Instructions appear in multiple places (extract to a reusable skill)
 
 **Examples:**
-- `/run [playbook]` - Execute a workflow
-- `/save-notes` - Store meeting notes (in a sales ccAPP)
-- `/generate-report` - Create a quarterly report
-- `/organize-brand` - Process uploaded files
+- `/summarize` — user-triggered slash command, saves notes to knowledge base
+- `knowledge-search` — auto-loaded, teaches Claude how to search documents/
+- `writing-style` — background knowledge, silently enforces conventions
+- `/deploy` — user-triggered, runs deployment workflow with side effects
 
-**Key characteristic:** Commands are **intentional** - the user is saying "I want to do THIS specific thing right now"
+**Key characteristic:** Skills are **methods** — they define how work gets done, at whatever level of user control you need.
 
 ### Agents = Specialized Isolation
 
-**What they are:** Focused sub-agents that run in isolation with specific skills and narrow context
+**What they are:** Focused sub-agents that run in isolation with specific skills and narrow context.
 
 **When to create one:** When a task requires:
 - **Specialized expertise** (editor, researcher, fact-checker)
-- **Isolated context** (you don't want to pollute main conversation)
-- **Repeatable specialization** (same type of work, different contexts)
+- **Isolated context** (don't pollute the main conversation)
+- **Repeatable specialization** (same type of work, different inputs)
 
 **Examples:**
-- `researcher` - Deep web research without cluttering main context
-- `editor` - QA review with brand compliance focus
-- `competitor-analyzer` - Analyze competing content
-- `fact-checker` - Verify claims against sources
+- `researcher` — deep knowledge base search without cluttering main context
+- `editor` — QA review with brand compliance focus
+- `competitor-analyzer` — analyze competing content
+- `fact-checker` — verify claims against sources
 
-**Key characteristic:** Agents are **specialists** - they do one thing really well, with blinders on to everything else
-
-### Skills = Capability Extensions
-
-**What they are:** Reusable instructions that extend what Claude can do naturally
-
-**When to create one:** When Claude needs to know HOW to do something that isn't innate
-
-**Examples:**
-- `session` - How to create folders, version artifacts, manage outputs
-- `brand-voice` - How to find and apply voice guidelines
-- `seo-guidelines` - How to optimize for search
-- `knowledge-search` - How to search your knowledge base
-
-**Key characteristic:** Skills are **methods** - they teach Claude new capabilities it can use across contexts
+**Key characteristic:** Agents are **specialists** — they do one thing well, with blinders on to everything else.
 
 ### MCPs = Tool Infrastructure
 
-**What they are:** Model Context Protocol servers that provide specialized tools and data sources
+**What they are:** Model Context Protocol servers that provide specialized tools and data sources.
 
 **How they relate to skills:** MCPs are the underlying tool layer that skills leverage. Skills define the "how" (methodology), while MCPs provide the "with what" (specific tools).
 
@@ -83,17 +80,17 @@ Agent → Uses skills (which use MCP tools)
 - You're teaching Claude domain-specific knowledge
 - You're orchestrating multiple MCP tools together
 
-**Key characteristic:** MCPs are **infrastructure** - they extend Claude's tooling so skills can accomplish more
+**Key characteristic:** MCPs are **infrastructure** — they extend Claude's tooling so skills can accomplish more.
 
 ---
 
 ## The Knowledge Architecture
 
-Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. Think of it as an information architecture with different volatility levels:
+Beyond skills/agents/MCPs, every ccAPP needs places for knowledge to live. Think of it as an information architecture with different volatility levels:
 
 ### 1. Evergreen Context (Stable Reference)
 
-**Purpose:** The "how things work here" knowledge that's always relevant and slowly evolves
+**Purpose:** The "how things work here" knowledge that's always relevant and slowly evolves.
 
 **Characteristics:**
 - Updated infrequently
@@ -107,8 +104,6 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 - Company standards
 - Approved terminology
 
-**In this ccAPP:** `brand-context/brand-kit/`
-
 **Questions to ask:**
 - What stable knowledge does the system need to reference on every task?
 - What defines "how we do things"?
@@ -116,7 +111,7 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 
 ### 2. Dynamic Context (Growing Knowledge)
 
-**Purpose:** The "what we know" knowledge that accumulates and grows over time
+**Purpose:** The "what we know" knowledge that accumulates and grows over time.
 
 **Characteristics:**
 - Grows continuously
@@ -130,8 +125,6 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 - Past work samples
 - Customer data
 
-**In this ccAPP:** `brand-context/knowledge-base/`
-
 **Questions to ask:**
 - What knowledge accumulates over time?
 - What should be searchable but not always loaded?
@@ -139,20 +132,18 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 
 ### 3. Input Buckets (User → System)
 
-**Purpose:** Staging areas where users drop things for the system to process
+**Purpose:** Staging areas where users drop things for the system to process.
 
 **Characteristics:**
 - Temporary holding area
 - Processed then archived/moved
-- Clear processing trigger (usually a command)
+- Clear processing trigger (usually a skill)
 - One-way flow: user puts in, system takes out
 
 **Examples:**
 - Upload folder for brand files
 - Inbox for documents to analyze
 - Queue for items to process
-
-**In this ccAPP:** `brand-upload/`
 
 **Questions to ask:**
 - Where do users provide raw inputs?
@@ -161,7 +152,7 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 
 ### 4. Output Repositories (System → User)
 
-**Purpose:** Where the system saves its work for users to consume
+**Purpose:** Where the system saves its work for users to consume.
 
 **Characteristics:**
 - Organized by session/task/date
@@ -175,8 +166,6 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 - Meeting summaries
 - Analysis results
 
-**In this ccAPP:** `content/sessions/`
-
 **Questions to ask:**
 - What artifacts does the system create?
 - How should they be organized (by date? by project? by type?)
@@ -185,7 +174,7 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 
 ### 5. Working Memory (Session State)
 
-**Purpose:** What the system needs to remember within and across sessions
+**Purpose:** What the system needs to remember within and across sessions.
 
 **Characteristics:**
 - Session-specific or persistent
@@ -198,8 +187,6 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 - Progress checkpoints
 - Feedback queue
 
-**In this ccAPP:** `_log.md`, `_inputs.md`, `feedback/`
-
 **Questions to ask:**
 - What does the system need to remember during a task?
 - What needs to persist between sessions?
@@ -207,7 +194,7 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 
 ### 6. Background Job Context (Async Work)
 
-**Purpose:** Information accessible for work that happens outside the main conversation
+**Purpose:** Information accessible for work that happens outside the main conversation.
 
 **Characteristics:**
 - Readable by spawned agents
@@ -218,8 +205,6 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 - Research briefs for researcher agent
 - Content for editor to review
 - URLs for competitor analysis
-
-**In this ccAPP:** Passed via agent prompts + access to sessions/
 
 **Questions to ask:**
 - What work should happen in the background?
@@ -232,19 +217,19 @@ Beyond commands/agents/skills, every ccAPP needs places for knowledge to live. T
 
 When building a new ccAPP, ask yourself these questions in order:
 
-### Phase 1: Define Workflows (Commands)
+### Phase 1: Define Workflows (Skills as Slash Commands)
 
 1. **What are the user's primary goals?**
    - What are they trying to accomplish?
-   - What are the 3-5 main things they'll do repeatedly?
+   - What are the 3–5 main things they'll do repeatedly?
 
-2. **Which goals are intentional actions?**
+2. **Which goals are deliberate, user-initiated actions?**
    - What requires the user to consciously decide "I want to do X now"?
-   - These become your **commands**
+   - These become skills with `disable-model-invocation: true`
 
 3. **Which actions follow a multi-step process?**
-   - Which commands need workflows/playbooks?
    - What are the steps and checkpoints?
+   - Should any steps run in an isolated subagent (`context: fork`)?
 
 ### Phase 2: Identify Specializations (Agents)
 
@@ -267,7 +252,7 @@ When building a new ccAPP, ask yourself these questions in order:
    - Web search? File processing? Data transformation?
    - Look for existing MCPs or build custom ones
 
-### Phase 4: Extend Capabilities (Skills)
+### Phase 4: Extend Capabilities (Auto-loaded Skills)
 
 8. **What doesn't Claude know how to do in your domain?**
    - What special methods, formats, or standards apply?
@@ -276,38 +261,31 @@ When building a new ccAPP, ask yourself these questions in order:
 
 9. **What's reusable across multiple workflows?**
    - What instructions appear in multiple places?
-   - These become your **skills**
+   - These become auto-loaded skills
 
-### Phase 5: Structure Knowledge (Folders)
+### Phase 5: Add Background Knowledge (Hidden Skills)
 
-10. **What stable knowledge does every task need?** → Evergreen Context
-    - Brand guidelines? Standards? Rules? Voice?
+10. **What should always be true, regardless of task?**
+    - Style guides? Conventions? Constraints?
+    - These become skills with `user-invocable: false`
 
-11. **What knowledge accumulates over time?** → Dynamic Context
-    - Examples? Research? Past work? Reference materials?
+11. **What knowledge do agents need preloaded?**
+    - Use the `skills` field on agents to inject skill content at startup
 
-12. **Where do users provide inputs?** → Input Buckets
-    - What comes from outside the system?
-    - What needs processing or transformation?
+### Phase 6: Structure Knowledge (Folders)
 
-13. **Where does work get saved?** → Output Repositories
-    - What artifacts are created?
-    - How should they be organized?
-    - What metadata matters?
-
-14. **What needs to be remembered?** → Working Memory
-    - Within a session? Across sessions?
-    - For debugging? For continuity?
-
-15. **What work happens asynchronously?** → Background Job Context
-    - What can agents do independently?
-    - What context do they need?
+12. **What stable knowledge does every task need?** → Evergreen Context
+13. **What knowledge accumulates over time?** → Dynamic Context
+14. **Where do users provide inputs?** → Input Buckets
+15. **Where does work get saved?** → Output Repositories
+16. **What needs to be remembered?** → Working Memory
+17. **What work happens asynchronously?** → Background Job Context
 
 ---
 
 ## Example: Designing a Sales Assistant ccAPP
 
-Let's walk through designing a hypothetical sales assistant ccAPP to see this framework in action:
+Let's walk through designing a hypothetical sales assistant ccAPP:
 
 ### User Goals
 - Log sales calls and extract action items
@@ -317,35 +295,35 @@ Let's walk through designing a hypothetical sales assistant ccAPP to see this fr
 
 ### Apply the Framework
 
-**Commands:**
-- `/log-call [recording-or-notes]` - Process a sales call
-- `/research [company]` - Deep dive on prospect
-- `/follow-up [call-id]` - Generate follow-up email
-- `/monthly-report` - Aggregate month's activity
+**Skills (slash commands — user-triggered):**
+- `/log-call` — process a sales call, `disable-model-invocation: true`
+- `/research` — deep dive on prospect, `context: fork, agent: Explore`
+- `/follow-up` — generate follow-up email, `disable-model-invocation: true`
+- `/monthly-report` — aggregate month's activity, `disable-model-invocation: true`
+
+**Skills (auto-loaded — Claude uses when relevant):**
+- `crm-format` — how to structure data for CRM import
+- `company-research` — how to research companies effectively
+- `email-style` — how to write in the company's voice
 
 **Agents:**
-- `researcher` - Deep company/prospect research
-- `email-writer` - Craft personalized emails
-- `call-analyzer` - Extract insights from call transcripts
+- `researcher` — deep company/prospect research
+- `email-writer` — craft personalized emails
+- `call-analyzer` — extract insights from call transcripts
 
 **MCPs:**
-- `parallel-search` - Web search and fetch capabilities
-- `crm-connector` - Read/write to Salesforce/HubSpot
-- `transcription` - Audio-to-text conversion
-
-**Skills:**
-- `crm-format` - How to structure data for CRM import (uses `crm-connector` MCP)
-- `company-research` - How to research companies effectively (uses `parallel-search` MCP)
-- `email-style` - How to write in the company's voice
+- `parallel-search` — web search and fetch capabilities
+- `crm-connector` — read/write to Salesforce/HubSpot
+- `transcription` — audio-to-text conversion
 
 **Knowledge Structure:**
 ```
 sales-assistant/
 ├── .claude/
-│   ├── commands/          # log-call, research, follow-up, monthly-report
 │   ├── agents/            # researcher, email-writer, call-analyzer
-│   ├── skills/            # crm-format, company-research, email-style
-│   └── mcp_config.json    # MCP configuration (parallel-search, crm-connector, etc.)
+│   ├── skills/            # log-call, research, follow-up, monthly-report
+│   │                      # crm-format, company-research, email-style
+│   └── mcp_config.json
 │
 ├── context/
 │   ├── evergreen/         # STABLE: Company info, products, email templates
@@ -370,10 +348,12 @@ sales-assistant/
 
 Use this to validate your design:
 
-### Commands
-- [ ] Are commands user-initiated and intentional?
-- [ ] Does each command have a clear trigger/purpose?
-- [ ] Are commands distinct from each other?
+### Skills
+- [ ] User-triggered skills have `disable-model-invocation: true`?
+- [ ] Auto-loaded skills have descriptions that help Claude know when to use them?
+- [ ] Background knowledge skills have `user-invocable: false`?
+- [ ] Does each skill teach "how" not "what"?
+- [ ] Is it reusable across multiple contexts?
 
 ### Agents
 - [ ] Does each agent have a narrow, specialized focus?
@@ -384,12 +364,6 @@ Use this to validate your design:
 - [ ] Does this provide tools that multiple skills can use?
 - [ ] Is this connecting to external data/APIs?
 - [ ] Would building/using an MCP be better than hardcoding in skills?
-
-### Skills
-- [ ] Does the skill teach "how" not "what"?
-- [ ] Is it reusable across multiple contexts?
-- [ ] Does it extend Claude's native capabilities?
-- [ ] Does it leverage MCP tools where appropriate?
 
 ### Knowledge Structure
 - [ ] Evergreen: Is this always relevant and slowly changing?
@@ -402,9 +376,9 @@ Use this to validate your design:
 
 ## Anti-Patterns to Avoid
 
-### 1. Command Bloat
-**Problem:** Creating a command for every tiny action
-**Solution:** Commands should be significant user intentions, not every possible action
+### 1. Skill Bloat
+**Problem:** Creating a skill for every tiny action
+**Solution:** User-triggered skills should be significant intentions, not every possible action
 
 ### 2. Agent Overuse
 **Problem:** Making agents for everything instead of using skills
@@ -416,7 +390,7 @@ Use this to validate your design:
 
 ### 4. Output Chaos
 **Problem:** Dumping all outputs into one folder
-**Solution:** Organize by time, project, type - make it browsable
+**Solution:** Organize by time, project, type — make it browsable
 
 ### 5. Over-Engineering Structure
 **Problem:** Creating folders "just in case"
@@ -435,19 +409,17 @@ Think of a ccAPP as:
 ```
 ┌──────────────────────────────────────────────────────┐
 │              USER INTERACTIONS                       │
-│  ┌──────────┐  ┌─────────┐  ┌────────┐             │
-│  │ Commands │  │ Agents  │  │ Skills │             │
-│  │(What to  │  │(Special-│  │(How to │             │
-│  │  do)     │  │  ists)  │  │  do it)│             │
-│  └──────────┘  └─────────┘  └────┬───┘             │
-└────────────────────────────────────┼────────────────┘
-                                     │
-                                     ↓
+│  ┌──────────────────────────────────┐  ┌──────────┐ │
+│  │             Skills               │  │  Agents  │ │
+│  │  /slash-cmd  │  auto  │  hidden  │  │(Special- │ │
+│  │ (user-only)  │  load  │  knowl.  │  │  ists)   │ │
+│  └──────────────────────────────────┘  └──────────┘ │
+└─────────────────────────────────────────────────────-┘
+                         ↓
 ┌──────────────────────────────────────────────────────┐
 │              TOOL INFRASTRUCTURE                     │
 │  ┌────────────────────────────────────────────┐     │
 │  │  MCPs (APIs, Search, Data Sources)         │     │
-│  │  (With what tools)                          │     │
 │  └────────────────────────────────────────────┘     │
 └──────────────────────────────────────────────────────┘
                          ↓
@@ -471,7 +443,7 @@ Think of a ccAPP as:
 ```
 
 **The framework in one sentence:**
-Commands define what users want to do, agents and skills define how work gets done (using MCP tools for infrastructure), and the knowledge architecture defines where information lives based on its stability, direction of flow, and usage pattern.
+Skills define what users can do and what Claude knows how to do (using MCP tools for infrastructure), agents handle specialized isolated work, and the knowledge architecture defines where information lives based on its stability, direction of flow, and usage pattern.
 
 ---
 
